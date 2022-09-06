@@ -262,8 +262,11 @@ class csPCaAlgorithm(SegmentationAlgorithm):
         # remove (some) secondary concentric/ring detections
         cspca_det_map_npy[cspca_det_map_npy<(np.max(cspca_det_map_npy)/5)] = 0
 
-        # revert detection map to physical space of original axial T2W scan
-        cspca_det_map_sitk = sitk.GetImageFromArray(cspca_det_map_npy)
+        # make sure that expected shape was matched after reverse resampling (can deviate due to rounding errors) 
+        cspca_det_map_sitk: sitk.Image = sitk.GetImageFromArray(crop_or_pad(
+            cspca_det_map_npy, size=sitk.GetArrayFromImage(sitk_img[0]).shape))
+
+        # works only if the expected shape matches
         cspca_det_map_sitk.CopyInformation(sitk_img[0])
 
         # save detection map
